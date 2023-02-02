@@ -14,10 +14,14 @@ namespace KanjiMan {
 		public int Correct { get; set; } = 0;
 
 		private WordTranslation? m_currentTranslation = null;
+		private List<WordTranslation> m_allTranslations = new();
+		private List<WordTranslation> m_remainingTranslations = new();
 
 		public MainWindow() {
 			InitializeComponent();
 			ResultLabel.Text = "";
+			m_allTranslations = Program.Translations;
+			m_remainingTranslations = Program.Translations;
 			PresentChallenge();
 		}
 
@@ -33,14 +37,21 @@ namespace KanjiMan {
 		}
 
 		void PresentChallenge() {
-			if (Program.Translations != null && Program.Translations.Count > 0) {
-				var randomTranslation = Program.Translations[new Random().Next(0, Program.Translations.Count - 1)];
-
-				InputTextBox.Text = "";
-				KanjiLabel.Text = randomTranslation.Kanji;
-
-				m_currentTranslation = randomTranslation;
+			if (m_remainingTranslations.Count == 0) {
+				if (m_allTranslations.Count == 0) {
+					ResultLabel.Text = "No available translations!";
+					return;
+				} else {
+					m_remainingTranslations = m_allTranslations;
+				}
 			}
+
+			var randomTranslation = m_remainingTranslations[new Random().Next(0, m_remainingTranslations.Count - 1)];
+
+			InputTextBox.Text = "";
+			KanjiLabel.Text = randomTranslation.Kanji;
+
+			m_currentTranslation = randomTranslation;
 		}
 
 		void SubmitAnswer() {
@@ -49,6 +60,7 @@ namespace KanjiMan {
 
 				if (m_currentTranslation.Romaji.Contains(InputTextBox.Text)) {
 					ResultLabel.Text = $"Correct! {m_currentTranslation.Kanji} can be read as '{InputTextBox.Text}'";
+					m_remainingTranslations.Remove(m_currentTranslation);
 					++Correct;
 				} else {
 					ResultLabel.Text = $"Incorrect! See the available answers for {m_currentTranslation.Kanji} below!";
