@@ -16,12 +16,13 @@ namespace KanjiMan {
 		private WordTranslation? m_currentTranslation = null;
 		private List<WordTranslation> m_allTranslations = new();
 		private List<WordTranslation> m_remainingTranslations = new();
+		private List<WordTranslation> m_recentlyFailedAttempts = new();
 
-		public MainWindow() {
+		internal MainWindow(List<WordTranslation> wordList) {
 			InitializeComponent();
 			ResultLabel.Text = "";
-			m_allTranslations = Program.Translations;
-			m_remainingTranslations = Program.Translations;
+			m_allTranslations = wordList;
+			m_remainingTranslations = wordList;
 			PresentChallenge();
 		}
 
@@ -38,7 +39,11 @@ namespace KanjiMan {
 
 		void PresentChallenge() {
 			if (m_remainingTranslations.Count == 0) {
-				if (m_allTranslations.Count == 0) {
+				if (m_recentlyFailedAttempts.Count > 0) {
+					// Move the previous failures into the remaining list so we can try them again.
+					m_remainingTranslations = m_recentlyFailedAttempts;
+					m_recentlyFailedAttempts.Clear();
+				} else if (m_allTranslations.Count == 0) {
 					ResultLabel.Text = "No available translations!";
 					return;
 				} else {
@@ -64,6 +69,9 @@ namespace KanjiMan {
 					++Correct;
 				} else {
 					ResultLabel.Text = $"Incorrect! See the available answers for {m_currentTranslation.Kanji} below!";
+					// Move the current translation from the remaining to failed list
+					m_recentlyFailedAttempts.Add(m_currentTranslation);
+					m_remainingTranslations.Remove(m_currentTranslation);
 				}
 
 				RomajiBox.Items.Clear();
