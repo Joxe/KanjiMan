@@ -63,7 +63,16 @@ namespace KanjiMan {
 			if (m_currentTranslation != null) {
 				++Attempts;
 
-				if (m_currentTranslation.Romaji.Contains(InputTextBox.Text)) {
+				var correctAnswer = false;
+
+				foreach (var romaji in m_currentTranslation.Romaji) {
+					if (romaji.Equals(InputTextBox.Text, StringComparison.OrdinalIgnoreCase)) {
+						correctAnswer = true;
+						break;
+					}
+				}
+
+				if (correctAnswer) {
 					ResultLabel.Text = $"Correct! {m_currentTranslation.Kanji} can be read as '{InputTextBox.Text}'";
 					m_remainingTranslations.Remove(m_currentTranslation);
 					++Correct;
