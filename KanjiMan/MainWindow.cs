@@ -41,10 +41,14 @@ namespace KanjiMan {
 			if (m_remainingTranslations.Count == 0) {
 				if (m_recentlyFailedAttempts.Count > 0) {
 					// Move the previous failures into the remaining list so we can try them again.
-					m_remainingTranslations = m_recentlyFailedAttempts;
-					m_recentlyFailedAttempts.Clear();
+					m_remainingTranslations.AddRange(m_recentlyFailedAttempts);
+					m_recentlyFailedAttempts.RemoveRange(0, m_recentlyFailedAttempts.Count);
 				} else if (m_allTranslations.Count == 0) {
 					ResultLabel.Text = "No available translations!";
+					RomajiBox.Items.Clear();
+					TranslationBox.Items.Clear();
+					InputTextBox.Text = "";
+					KanjiLabel.Text = "";
 					return;
 				} else {
 					m_remainingTranslations = m_allTranslations;
