@@ -25,8 +25,23 @@ namespace KanjiMan {
 			if (File.Exists(filePath)) {
 				using (var streamReader = new StreamReader(filePath, Encoding.Unicode)) {
 					var jsonFile = streamReader.ReadToEnd();
+					var allTranslations = JsonConvert.DeserializeObject<List<WordTranslation>>(jsonFile);
 
-					return JsonConvert.DeserializeObject<List<WordTranslation>>(jsonFile);
+					if (allTranslations == null) {
+						return null;
+					}
+
+					var translations = new List<WordTranslation>();
+
+					foreach (var translation in allTranslations) {
+						if (translations.Find(element => element.Kanji == translation.Kanji) == null) {
+							translations.Add(translation);
+						} else {
+							throw new InvalidDataException($"Translation for {translation.Kanji} ({translation.Romaji[0]}) already exists!");
+						}
+					}
+
+					return translations;
 				}
 			} else {
 				Console.WriteLine($"Could not find translation file at \"{filePath}\"!");
